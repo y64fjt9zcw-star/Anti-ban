@@ -15,6 +15,8 @@ local RS_Storage = game:GetService("ReplicatedStorage")
 -- [SOCIAL UI & EARLY WARNING SYSTEM - FULLY RESTORED]
 local Screen = Instance.new("ScreenGui", PG)
 Screen.Name = "NovaGhost_UI"
+Screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Screen.DisplayOrder = 999
 
 local WarningLabel = Instance.new("TextLabel", Screen)
 WarningLabel.Size = UDim2.new(0, 300, 0, 50)
@@ -28,6 +30,7 @@ WarningLabel.Visible = false
 
 local function CreateBtn(name, pos, text, link)
     local btn = Instance.new("TextButton", Screen)
+    btn.ZIndex = 10
     btn.Size = UDim2.new(0, 140, 0, 30)
     btn.Position = pos
     btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -48,6 +51,7 @@ CreateBtn("YouTube", UDim2.new(1, -150, 0, 45), "My Channel", "https://www.youtu
 
 -- [MOBILE LOC TOGGLE BUTTON]
 local ToggleBtn = Instance.new("TextButton", Screen)
+ToggleBtn.ZIndex = 10
 ToggleBtn.Size = UDim2.new(0, 40, 0, 40)
 ToggleBtn.Position = UDim2.new(0, 10, 0.5, 0)
 ToggleBtn.Text = "LOC"
