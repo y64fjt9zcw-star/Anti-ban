@@ -17,6 +17,7 @@ local Screen = Instance.new("ScreenGui", PG)
 Screen.Name = "NovaGhost_UI"
 Screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 Screen.DisplayOrder = 999
+Screen.IgnoreGuiInset = true
 
 local WarningLabel = Instance.new("TextLabel", Screen)
 WarningLabel.Size = UDim2.new(0, 300, 0, 50)
