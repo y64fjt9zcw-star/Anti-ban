@@ -1,6 +1,6 @@
 -- =========================================================================
--- ANANAZOR ULTIMATE GHOST ENGINE - V10.4.1 (UNIVERSAL GHOST MODE)
--- FEATURES: FULL RESTORE + SILENT BYPASS + EARLY WARNING SYSTEM + DYNAMIC AFK SLEEP + MOBILE LOC TOGGLE + GHOST MODE + ANTI-RUBBERBAND + FE BYPASS + SOCIALS
+-- ANANAZOR ULTIMATE GHOST ENGINE - V11.0.0 (UNIVERSAL GHOST MODE)
+-- FEATURES: FULL RESTORE + SILENT BYPASS + EARLY WARNING SYSTEM + DYNAMIC AFK SLEEP + MOBILE LOC TOGGLE + GHOST MODE + ANTI-RUBBERBAND + FE BYPASS + SOCIALS + STUBBORN BUG BYPASS
 -- KEYBIND: [INSERT] TO TOGGLE | [F9] OR [LOC BTN] TO FAKE LOCATION | [LEFTCONTROL] TO TOGGLE ANTI-RUBBERBAND
 -- CREATOR: İNANAZOR
 -- =========================================================================
@@ -28,6 +28,14 @@ if hookfunction then
     end
 end
 
+-- [BUG ALIBI: ERROR SIMULATION]
+local function TriggerErrorSimulation()
+    local ErrorGui = Instance.new("Message", PG)
+    ErrorGui.Text = "Connection lost: Error Code 277 (Client Lagging)"
+    task.wait(3)
+    ErrorGui:Destroy()
+end
+
 -- [SELF-DESTRUCT SYSTEM]
 local function SelfDestruct(reason)
     active = false
@@ -50,7 +58,6 @@ end
 local mt = getrawmetatable(game)
 local oldNamecall = mt.__namecall
 setreadonly(mt, false)
-
 mt.__namecall = newcclosure(function(self, ...)
     local method = getnamecallmethod()
     if (method == "FireServer" or method == "InvokeServer") and (self.Name:lower():find("kick") or self.Name:lower():find("ban")) then
@@ -75,31 +82,35 @@ WarningLabel.TextColor3 = Color3.new(1, 1, 1)
 WarningLabel.Text = "DETECTION IMMINENT"
 WarningLabel.Visible = false
 
--- [LINKS FRAME]
+-- [LINKS & TOGGLE FRAME]
 local LinksFrame = Instance.new("Frame", Screen)
-LinksFrame.Size = UDim2.new(0, 180, 0, 70)
+LinksFrame.Size = UDim2.new(0, 180, 0, 180)
 LinksFrame.Position = UDim2.new(1, -190, 0, 10)
 LinksFrame.BackgroundTransparency = 1
 
-local DcBtn = Instance.new("TextButton", LinksFrame)
-DcBtn.Size = UDim2.new(1, 0, 0, 30)
-DcBtn.Position = UDim2.new(0, 0, 0, 0)
-DcBtn.BackgroundTransparency = 0.4
-DcBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-DcBtn.Text = "Discord Server"
-DcBtn.Font = Enum.Font.GothamBold
-DcBtn.TextSize = 12
-Instance.new("UICorner", DcBtn).CornerRadius = UDim.new(0, 6)
+local function CreateButton(name, pos, text)
+    local btn = Instance.new("TextButton", LinksFrame)
+    btn.Size = UDim2.new(1, 0, 0, 30)
+    btn.Position = pos
+    btn.BackgroundTransparency = 0.4
+    btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    btn.Text = text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    return btn
+end
 
-local YtBtn = Instance.new("TextButton", LinksFrame)
-YtBtn.Size = UDim2.new(1, 0, 0, 30)
-YtBtn.Position = UDim2.new(0, 0, 0, 35)
-YtBtn.BackgroundTransparency = 0.4
-YtBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-YtBtn.Text = "YouTube Channel"
-YtBtn.Font = Enum.Font.GothamBold
-YtBtn.TextSize = 12
-Instance.new("UICorner", YtBtn).CornerRadius = UDim.new(0, 6)
+local DcBtn = CreateButton("Dc", UDim2.new(0, 0, 0, 0), "Discord Server")
+local YtBtn = CreateButton("Yt", UDim2.new(0, 0, 0, 35), "YouTube Channel")
+local LocBtn = CreateButton("Loc", UDim2.new(0, 0, 0, 70), "Fake Loc: OFF")
+local RubberBtn = CreateButton("Rubber", UDim2.new(0, 0, 0, 105), "Anti-Rubber: OFF")
+
+DcBtn.MouseButton1Click:Connect(function() setclipboard("https://discord.gg/NEeK7D3XU") DcBtn.Text = "Copied!" task.wait(1) DcBtn.Text = "Discord Server" end)
+YtBtn.MouseButton1Click:Connect(function() setclipboard("https://www.youtube.com/@Brkyyt82") YtBtn.Text = "Copied!" task.wait(1) YtBtn.Text = "YouTube Channel" end)
+
+LocBtn.MouseButton1Click:Connect(function() fakeLocation = not fakeLocation LocBtn.Text = "Fake Loc: " .. (fakeLocation and "ON" or "OFF") end)
+RubberBtn.MouseButton1Click:Connect(function() antiRubber = not antiRubber RubberBtn.Text = "Anti-Rubber: " .. (antiRubber and "ON" or "OFF") end)
 
 RS.RenderStepped:Connect(function()
     local hue = (tick() % 5) / 5
@@ -117,31 +128,21 @@ ProxyPart.CanCollide = false
 ProxyPart.Anchored = false
 ProxyPart.Parent = workspace
 
-pcall(function()
-    if setnetworkowner then
-        setnetworkowner(ProxyPart, PLR)
-    end
-end)
+pcall(function() if setnetworkowner then setnetworkowner(ProxyPart, PLR) end end)
 
--- [INTEGRATED TRIGGER SYSTEM WITH ALIBIS]
 local function TriggerGhostFeatures(actionType)
     local hrp = PLR.Character and PLR.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
-    
-    if actionType == "teleport" then
-        -- Artificial latency injection on teleport
-        task.wait(0.25)
-    elseif actionType == "noclip_stuck" then
-        -- Physics bug alibi when escaping dynamic rooms
-        hrp.AssemblyLinearVelocity = Vector3.new(0, 80, 0)
-        task.wait(0.15)
-        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-    elseif actionType == "noclip_wall" then
-        -- Sequence burst packets during wall phase
-        for i = 1, 4 do
-            hrp.CFrame = hrp.CFrame + hrp.CFrame.LookVector * 0.2
-            task.wait(0.03)
-        end
+    if actionType == "teleport" then 
+        task.wait(math.random(0.3, 0.6)) -- ARTIFICIAL LAG
+    elseif actionType == "noclip_stuck" then 
+        TriggerErrorSimulation() -- ERROR SIMULATION
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 80, 0) task.wait(0.15) hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    elseif actionType == "noclip_wall" then 
+        for i = 1, 4 do 
+            hrp.CFrame = hrp.CFrame + hrp.CFrame.LookVector * 0.2 
+            task.wait(0.15) -- SEQUENTIAL PACKETS
+        end 
     end
 end
 
@@ -149,44 +150,19 @@ end
 RS.Heartbeat:Connect(function()
     if active and PLR.Character and PLR.Character:FindFirstChild("HumanoidRootPart") then
         local hrp = PLR.Character.HumanoidRootPart
-        
-        if antiRubber then 
-            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-        end
-        
+        if antiRubber then hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0) hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0) end
         if fakeLocation then hrp.CFrame = ProxyPart.CFrame end
         ProxyPart.CFrame = hrp.CFrame
     end
 end)
 
--- [STRENGTHENED MONITORING & SECURITY]
-SC.Error:Connect(function(msg)
-    if msg:lower():find("kick") or msg:lower():find("ban") or msg:lower():find("spy") or msg:lower():find("log") then 
-        SelfDestruct("Security Flag") 
-    end
-end)
+SC.Error:Connect(function(msg) if msg:lower():find("kick") or msg:lower():find("ban") or msg:lower():find("spy") or msg:lower():find("log") then SelfDestruct("Security Flag") end end)
+LS.MessageOut:Connect(function(msg, msgType) if msgType == Enum.MessageType.MessageError and (msg:lower():find("kick") or msg:lower():find("ban") or msg:lower():find("spy")) then SelfDestruct("Internal Log Detection") end end)
 
-LS.MessageOut:Connect(function(msg, msgType)
-    if msgType == Enum.MessageType.MessageError and (msg:lower():find("kick") or msg:lower():find("ban") or msg:lower():find("spy")) then
-        SelfDestruct("Internal Log Detection")
-    end
-end)
-
--- [INPUT HANDLING - UPDATED WITH FEATURES]
 UIS.InputBegan:Connect(function(key, gameProcessed)
     if not gameProcessed then
-        if key.KeyCode == Enum.KeyCode.Insert then 
-            active = not active 
-            TriggerGhostFeatures("noclip_stuck")
-        end
-        if key.KeyCode == Enum.KeyCode.LeftControl then
-            antiRubber = not antiRubber
-            TriggerGhostFeatures("noclip_wall")
-        end
-        if key.KeyCode == Enum.KeyCode.F9 then
-            fakeLocation = not fakeLocation
-            TriggerGhostFeatures("teleport")
-        end
+        if key.KeyCode == Enum.KeyCode.Insert then active = not active TriggerGhostFeatures("noclip_stuck") end
+        if key.KeyCode == Enum.KeyCode.LeftControl then antiRubber = not antiRubber RubberBtn.Text = "Anti-Rubber: " .. (antiRubber and "ON" or "OFF") TriggerGhostFeatures("noclip_wall") end
+        if key.KeyCode == Enum.KeyCode.F9 then fakeLocation = not fakeLocation LocBtn.Text = "Fake Loc: " .. (fakeLocation and "ON" or "OFF") TriggerGhostFeatures("teleport") end
     end
 end)
