@@ -1,7 +1,8 @@
 -- =========================================================================
 -- ANANAZOR ULTIMATE GHOST ENGINE - V10.4.1 (UNIVERSAL GHOST MODE)
--- FEATURES: FULL RESTORE + SILENT BYPASS + EARLY WARNING SYSTEM + DYNAMIC AFK SLEEP + MOBILE LOC TOGGLE + GHOST MODE + ANTI-RUBBERBAND + FE BYPASS
+-- FEATURES: FULL RESTORE + SILENT BYPASS + EARLY WARNING SYSTEM + DYNAMIC AFK SLEEP + MOBILE LOC TOGGLE + GHOST MODE + ANTI-RUBBERBAND + FE BYPASS + SOCIALS
 -- KEYBIND: [INSERT] TO TOGGLE | [F9] OR [LOC BTN] TO FAKE LOCATION | [LEFTCONTROL] TO TOGGLE ANTI-RUBBERBAND
+-- CREATOR: İNANAZOR
 -- =========================================================================
 
 local RS = game:GetService("RunService")
@@ -15,12 +16,29 @@ local active = true
 local antiRubber = false
 local fakeLocation = false
 
--- [SELF-DESTRUCT SYSTEM - FULL CLEANUP ON THREAT]
+-- [ANTI-CONSOLE & ANTI-SPY: LOG BLOCKING & DEEP HOOKING]
+if hookfunction then
+    local LogFunctions = {print, warn, error, info}
+    for _, func in pairs(LogFunctions) do
+        hookfunction(func, newcclosure(function(...) return end))
+    end
+    
+    if LS.GetLogHistory then
+        hookfunction(LS.GetLogHistory, newcclosure(function() return {} end))
+    end
+end
+
+-- [SELF-DESTRUCT SYSTEM]
 local function SelfDestruct(reason)
     active = false
     pcall(function()
         WarningLabel.Text = "THREAT DETECTED: " .. reason
         WarningLabel.Visible = true
+        local Sound = Instance.new("Sound", workspace)
+        Sound.SoundId = "rbxassetid://16447936166"
+        Sound.Volume = 10
+        Sound:Play()
+        Sound.Ended:Connect(function() Sound:Destroy() end)
     end)
     task.wait(1.5)
     pcall(function() ProxyPart:Destroy() end)
@@ -32,6 +50,7 @@ end
 local mt = getrawmetatable(game)
 local oldNamecall = mt.__namecall
 setreadonly(mt, false)
+
 mt.__namecall = newcclosure(function(self, ...)
     local method = getnamecallmethod()
     if (method == "FireServer" or method == "InvokeServer") and (self.Name:lower():find("kick") or self.Name:lower():find("ban")) then
@@ -42,7 +61,7 @@ mt.__namecall = newcclosure(function(self, ...)
 end)
 setreadonly(mt, true)
 
--- [SOCIAL UI & WARNING SYSTEM]
+-- [UI SYSTEM]
 local Screen = Instance.new("ScreenGui", PG)
 Screen.Name = "NovaGhost_UI"
 Screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -56,6 +75,39 @@ WarningLabel.TextColor3 = Color3.new(1, 1, 1)
 WarningLabel.Text = "DETECTION IMMINENT"
 WarningLabel.Visible = false
 
+-- [LINKS FRAME]
+local LinksFrame = Instance.new("Frame", Screen)
+LinksFrame.Size = UDim2.new(0, 180, 0, 70)
+LinksFrame.Position = UDim2.new(1, -190, 0, 10)
+LinksFrame.BackgroundTransparency = 1
+
+local DcBtn = Instance.new("TextButton", LinksFrame)
+DcBtn.Size = UDim2.new(1, 0, 0, 30)
+DcBtn.Position = UDim2.new(0, 0, 0, 0)
+DcBtn.BackgroundTransparency = 0.4
+DcBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+DcBtn.Text = "Discord Server"
+DcBtn.Font = Enum.Font.GothamBold
+DcBtn.TextSize = 12
+Instance.new("UICorner", DcBtn).CornerRadius = UDim.new(0, 6)
+
+local YtBtn = Instance.new("TextButton", LinksFrame)
+YtBtn.Size = UDim2.new(1, 0, 0, 30)
+YtBtn.Position = UDim2.new(0, 0, 0, 35)
+YtBtn.BackgroundTransparency = 0.4
+YtBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+YtBtn.Text = "YouTube Channel"
+YtBtn.Font = Enum.Font.GothamBold
+YtBtn.TextSize = 12
+Instance.new("UICorner", YtBtn).CornerRadius = UDim.new(0, 6)
+
+RS.RenderStepped:Connect(function()
+    local hue = (tick() % 5) / 5
+    local rainbowColor = Color3.fromHSV(hue, 1, 1)
+    DcBtn.TextColor3 = rainbowColor
+    YtBtn.TextColor3 = rainbowColor
+end)
+
 -- [CORE ENGINE PROXY & FE BYPASS]
 local ProxyPart = Instance.new("Part")
 ProxyPart.Name = "NovaGhost_Proxy"
@@ -65,20 +117,31 @@ ProxyPart.CanCollide = false
 ProxyPart.Anchored = false
 ProxyPart.Parent = workspace
 
--- FE BYPASS: Request Network Ownership
 pcall(function()
     if setnetworkowner then
         setnetworkowner(ProxyPart, PLR)
     end
 end)
 
+-- [INTEGRATED TRIGGER SYSTEM WITH ALIBIS]
 local function TriggerGhostFeatures(actionType)
     local hrp = PLR.Character and PLR.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
-    if actionType == "noclip" then
-        for i = 1, 10 do hrp.CFrame = hrp.CFrame + hrp.CFrame.LookVector * 0.25 task.wait(0.02) end
-    elseif actionType == "glitch" then
-        hrp.AssemblyLinearVelocity = Vector3.new(0, -50, 0) task.wait(0.1) hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    
+    if actionType == "teleport" then
+        -- Artificial latency injection on teleport
+        task.wait(0.25)
+    elseif actionType == "noclip_stuck" then
+        -- Physics bug alibi when escaping dynamic rooms
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 80, 0)
+        task.wait(0.15)
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    elseif actionType == "noclip_wall" then
+        -- Sequence burst packets during wall phase
+        for i = 1, 4 do
+            hrp.CFrame = hrp.CFrame + hrp.CFrame.LookVector * 0.2
+            task.wait(0.03)
+        end
     end
 end
 
@@ -87,7 +150,6 @@ RS.Heartbeat:Connect(function()
     if active and PLR.Character and PLR.Character:FindFirstChild("HumanoidRootPart") then
         local hrp = PLR.Character.HumanoidRootPart
         
-        -- FE WORLD ANTI-RUBBERBAND: Freeze Velocity & State
         if antiRubber then 
             hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
@@ -98,26 +160,33 @@ RS.Heartbeat:Connect(function()
     end
 end)
 
--- [MONITORING & SECURITY]
+-- [STRENGTHENED MONITORING & SECURITY]
 SC.Error:Connect(function(msg)
-    if msg:lower():find("kick") or msg:lower():find("ban") then SelfDestruct("Security Flag") end
+    if msg:lower():find("kick") or msg:lower():find("ban") or msg:lower():find("spy") or msg:lower():find("log") then 
+        SelfDestruct("Security Flag") 
+    end
 end)
 
 LS.MessageOut:Connect(function(msg, msgType)
-    if msgType == Enum.MessageType.MessageError and (msg:lower():find("kick") or msg:lower():find("ban")) then
+    if msgType == Enum.MessageType.MessageError and (msg:lower():find("kick") or msg:lower():find("ban") or msg:lower():find("spy")) then
         SelfDestruct("Internal Log Detection")
     end
 end)
 
--- [INPUT HANDLING]
+-- [INPUT HANDLING - UPDATED WITH FEATURES]
 UIS.InputBegan:Connect(function(key, gameProcessed)
     if not gameProcessed then
         if key.KeyCode == Enum.KeyCode.Insert then 
             active = not active 
-            if not active then TriggerGhostFeatures("glitch") end
+            TriggerGhostFeatures("noclip_stuck")
         end
         if key.KeyCode == Enum.KeyCode.LeftControl then
             antiRubber = not antiRubber
+            TriggerGhostFeatures("noclip_wall")
+        end
+        if key.KeyCode == Enum.KeyCode.F9 then
+            fakeLocation = not fakeLocation
+            TriggerGhostFeatures("teleport")
         end
     end
 end)
